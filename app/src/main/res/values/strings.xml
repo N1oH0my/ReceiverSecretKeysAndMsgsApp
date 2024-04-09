@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">ReceiveSecretKeyApp</string>
+    <string name="get_secret_key">Get secret key</string>
+</resources>
