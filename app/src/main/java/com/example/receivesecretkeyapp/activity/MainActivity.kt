@@ -39,11 +39,6 @@ class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
             insets
         }
 
-        if (savedInstanceState != null) {
-            lastSecretKeyMessage = savedInstanceState.getString("lastSecretKeyMessage")
-            lastBroadcastMessage = savedInstanceState.getString("lastBroadcastMessage")
-        }
-
         broadcastReceiver = CustomBroadcastReceiver()
         val filter = IntentFilter("ru.shalkoff.vsu_lesson2_2024.SURF_ACTION")
         broadcastReceiver.setListener(this)
