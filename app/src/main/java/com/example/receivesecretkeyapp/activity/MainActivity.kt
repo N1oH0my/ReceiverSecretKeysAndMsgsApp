@@ -5,21 +5,26 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
 import com.example.receivesecretkeyapp.R
 import com.example.receivesecretkeyapp.databinding.ActivityMainBinding
 import com.example.receivesecretkeyapp.entities.receivers.CustomBroadcastReceiver
 import com.example.receivesecretkeyapp.entities.interfaces.BroadcastReceiverListener
+import com.example.receivesecretkeyapp.entities.receivers.ImageContentResolver
+import com.squareup.picasso.Picasso
 
 class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
 
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var broadcastReceiver: CustomBroadcastReceiver
+    private lateinit var imageContentResolverClient: ImageContentResolver
 
     private var lastSecretKeyMessage: String? = null
     private var lastBroadcastMessage: String? = null
@@ -44,10 +49,30 @@ class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
         broadcastReceiver.setListener(this)
         registerReceiver(broadcastReceiver, filter)
 
+        initResolvers()
+        initListeners()
 
+    }
+
+    private fun initListeners() {
         binding.idButtonSecretKey.setOnClickListener {
             getSecretKey()
         }
+        binding.getLastImgButton.setOnClickListener {
+            val imageUri = imageContentResolverClient.queryImage()
+            imageUri?.let {
+                val imageView: ImageView = binding.lastImgImageView
+                Glide.with(this)
+                    .load(it)
+                    .into(imageView)
+
+                binding.urlTextView.text = it.toString()
+            }
+        }
+    }
+
+    private fun initResolvers() {
+        imageContentResolverClient = ImageContentResolver(this)
     }
 
     @SuppressLint("Range")
