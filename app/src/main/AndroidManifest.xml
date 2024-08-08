@@ -2,17 +2,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <queries>
         <package android:name="ru.shalkoff.vsu_lesson2_2024" />
     </queries>
 
-    <application
+    <uses-permission android:name="android.permission.VIBRATE" />
 
+    <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -23,6 +28,9 @@
         android:theme="@style/Theme.ReceiveSecretKeyApp"
         tools:targetApi="31">
         <activity
+            android:name=".activity.ActivityCapture"
+            android:exported="false" />
+        <activity
             android:name=".activity.MainActivity"
             android:exported="true">
             <intent-filter>
@@ -32,14 +40,13 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".entities.receivers.CustomBroadcastReceiver"
+        <receiver
+            android:name=".entities.receivers.CustomBroadcastReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="ru.shalkoff.vsu_lesson2_2024.SURF_ACTION" />
             </intent-filter>
         </receiver>
-
     </application>
-
 
 </manifest>

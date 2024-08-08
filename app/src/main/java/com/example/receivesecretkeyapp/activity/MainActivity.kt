@@ -1,14 +1,19 @@
 package com.example.receivesecretkeyapp.activity
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
@@ -17,7 +22,9 @@ import com.example.receivesecretkeyapp.databinding.ActivityMainBinding
 import com.example.receivesecretkeyapp.entities.receivers.CustomBroadcastReceiver
 import com.example.receivesecretkeyapp.entities.interfaces.BroadcastReceiverListener
 import com.example.receivesecretkeyapp.entities.receivers.ImageContentResolver
-import com.squareup.picasso.Picasso
+import com.example.receivesecretkeyapp.entities.utilityimpl.QRScanner
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 
 class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
 
@@ -25,6 +32,8 @@ class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
 
     private lateinit var broadcastReceiver: CustomBroadcastReceiver
     private lateinit var imageContentResolverClient: ImageContentResolver
+    private lateinit var qrScanner: QRScanner
+    private lateinit var barLauncher: ActivityResultLauncher<ScanOptions>
 
     private var lastSecretKeyMessage: String? = null
     private var lastBroadcastMessage: String? = null
@@ -49,9 +58,32 @@ class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
         broadcastReceiver.setListener(this)
         registerReceiver(broadcastReceiver, filter)
 
+        val REQUEST_CAMERA = 1
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA)
+        }
+
         initResolvers()
+        initQRScanner()
         initListeners()
 
+    }
+
+    private fun onQRScanCompleted(data: String) {
+        runOnUiThread {
+            binding.urlTextView.text = data
+        }
+    }
+
+    private fun initQRScanner() {
+        barLauncher = registerForActivityResult(
+            ScanContract()
+        ) { result ->
+            if (result.contents != null) {
+                onQRScanCompleted(result.contents.toString())
+            }
+        }
+        qrScanner = QRScanner(barLauncher)
     }
 
     private fun initListeners() {
@@ -68,6 +100,9 @@ class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
 
                 binding.urlTextView.text = it.toString()
             }
+        }
+        binding.startScanBtn.setOnClickListener {
+            qrScanner.startCamera()
         }
     }
 
