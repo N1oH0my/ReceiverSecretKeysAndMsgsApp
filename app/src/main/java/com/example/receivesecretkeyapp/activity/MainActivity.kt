@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -22,9 +23,15 @@ import com.example.receivesecretkeyapp.databinding.ActivityMainBinding
 import com.example.receivesecretkeyapp.entities.receivers.CustomBroadcastReceiver
 import com.example.receivesecretkeyapp.entities.interfaces.BroadcastReceiverListener
 import com.example.receivesecretkeyapp.entities.receivers.ImageContentResolver
+import com.example.receivesecretkeyapp.entities.utilityimpl.QREncoder
 import com.example.receivesecretkeyapp.entities.utilityimpl.QRScanner
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.WriterException
+import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
+import java.io.File
 
 class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
 
@@ -33,6 +40,7 @@ class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
     private lateinit var broadcastReceiver: CustomBroadcastReceiver
     private lateinit var imageContentResolverClient: ImageContentResolver
     private lateinit var qrScanner: QRScanner
+    private lateinit var qrEncoder: QREncoder
     private lateinit var barLauncher: ActivityResultLauncher<ScanOptions>
 
     private var lastSecretKeyMessage: String? = null
@@ -65,6 +73,7 @@ class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
 
         initResolvers()
         initQRScanner()
+        initQREncoder()
         initListeners()
 
     }
@@ -80,10 +89,21 @@ class MainActivity : AppCompatActivity(), BroadcastReceiverListener {
             ScanContract()
         ) { result ->
             if (result.contents != null) {
-                onQRScanCompleted(result.contents.toString())
+                runOnUiThread {
+                    onQRScanCompleted(result.contents.toString())
+
+                    val bitmap = qrEncoder.encodeAsBitmap(result.contents.toString(), 600)
+                    val imageView = binding.qrImageView
+                    imageView.setImageBitmap(bitmap)
+                }
+
             }
         }
         qrScanner = QRScanner(barLauncher)
+    }
+
+    private fun initQREncoder() {
+        qrEncoder = QREncoder(this)
     }
 
     private fun initListeners() {
